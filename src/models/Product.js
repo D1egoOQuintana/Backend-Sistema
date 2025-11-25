@@ -25,6 +25,19 @@ const Product = sequelize.define('Product', {
         type: DataTypes.TEXT,
         allowNull: true
     }
+    ,
+    imageUrl: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
+    CategoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'categories',
+            key: 'id'
+        }
+    }
 }, {
     tableName: 'products',
     timestamps: true
