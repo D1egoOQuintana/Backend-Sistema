@@ -48,3 +48,20 @@ exports.login = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al autenticar' });
   }
 };
+
+// Return current authenticated user info
+exports.me = async (req, res) => {
+  try {
+    // req.user is set by verifyToken middleware (contains id)
+    const userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ success: false, message: 'No autenticado' });
+
+    const user = await User.findByPk(userId, { include: Role, attributes: ['id', 'username', 'email', 'RoleId', 'createdAt'] });
+    if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+
+    res.json({ success: true, data: { id: user.id, username: user.username, email: user.email, role: user.Role ? user.Role.name : null } });
+  } catch (err) {
+    console.error('Error me:', err);
+    res.status(500).json({ success: false, message: 'Error al obtener usuario' });
+  }
+};
