@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const { Category } = require('../models');
 
 exports.getAllProducts = async (req, res) => {
     try {
@@ -47,7 +48,9 @@ exports.getProductById = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
     try {
-        const { nombre, precio, descripcion } = req.body;
+        const { nombre, precio, descripcion, imageUrl } = req.body;
+        // accept both CategoryId and categoryId from client
+        const CategoryId = req.body.CategoryId || req.body.categoryId || null;
 
         if (!nombre || !precio) {
             return res.status(400).json({
@@ -65,7 +68,15 @@ exports.createProduct = async (req, res) => {
             });
         }
 
-        const product = await Product.create({ nombre, precio, descripcion });
+        // If CategoryId provided, validate it exists
+        if (CategoryId) {
+            const cat = await Category.findByPk(CategoryId);
+            if (!cat) {
+                return res.status(400).json({ success: false, message: 'CategoryId inválido', data: null });
+            }
+        }
+
+        const product = await Product.create({ nombre, precio, descripcion, imageUrl, CategoryId });
 
         res.status(201).json({
             success: true,
@@ -85,7 +96,8 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const { nombre, precio, descripcion } = req.body;
+        const { nombre, precio, descripcion, imageUrl } = req.body;
+        const CategoryId = req.body.CategoryId || req.body.categoryId || null;
         const product = await Product.findByPk(req.params.id);
 
         if (!product) {
@@ -104,7 +116,14 @@ exports.updateProduct = async (req, res) => {
             });
         }
 
-        await product.update({ nombre, precio, descripcion });
+        if (CategoryId) {
+            const cat = await Category.findByPk(CategoryId);
+            if (!cat) {
+                return res.status(400).json({ success: false, message: 'CategoryId inválido', data: null });
+            }
+        }
+
+        await product.update({ nombre, precio, descripcion, imageUrl, CategoryId });
 
         res.json({
             success: true,
